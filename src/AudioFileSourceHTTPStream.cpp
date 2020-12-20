@@ -1,7 +1,7 @@
 /*
   AudioFileSourceHTTPStream
   Streaming HTTP source
-  
+
   Copyright (C) 2017  Earle F. Philhower, III
 
   This program is free software: you can redistribute it and/or modify
@@ -37,8 +37,11 @@ AudioFileSourceHTTPStream::AudioFileSourceHTTPStream(const char *url)
 bool AudioFileSourceHTTPStream::open(const char *url)
 {
   pos = 0;
-  http.begin(url);
+  http.begin(client, url);
   http.setReuse(true);
+#ifndef ESP32
+  http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
+#endif
   int code = http.GET();
   if (code != HTTP_CODE_OK) {
     http.end();
@@ -59,7 +62,7 @@ AudioFileSourceHTTPStream::~AudioFileSourceHTTPStream()
 uint32_t AudioFileSourceHTTPStream::read(void *data, uint32_t len)
 {
   if (data==NULL) {
-    Serial.printf_P(PSTR("ERROR! AudioFileSourceHTTPStream::read passed NULL data\n"));
+    audioLogger->printf_P(PSTR("ERROR! AudioFileSourceHTTPStream::read passed NULL data\n"));
     return 0;
   }
   return readInternal(data, len, false);
@@ -68,7 +71,7 @@ uint32_t AudioFileSourceHTTPStream::read(void *data, uint32_t len)
 uint32_t AudioFileSourceHTTPStream::readNonBlock(void *data, uint32_t len)
 {
   if (data==NULL) {
-    Serial.printf_P(PSTR("ERROR! AudioFileSourceHTTPStream::readNonBlock passed NULL data\n"));
+    audioLogger->printf_P(PSTR("ERROR! AudioFileSourceHTTPStream::readNonBlock passed NULL data\n"));
     return 0;
   }
   return readInternal(data, len, true);
@@ -123,6 +126,7 @@ retry:
 
 bool AudioFileSourceHTTPStream::seek(int32_t pos, int dir)
 {
+  audioLogger->printf_P(PSTR("ERROR! AudioFileSourceHTTPStream::seek not implemented!"));
   (void) pos;
   (void) dir;
   return false;

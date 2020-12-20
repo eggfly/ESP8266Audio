@@ -73,7 +73,7 @@ void AudioGeneratorMIDI::midi_error(const char *msg, int curpos)
   cb.st(curpos, msg);
 #if 0
   int ptr;
-  Serial.printf("---> MIDI file error at position %04X (%d): %s\n", (uint16_t) curpos, (uint16_t) curpos, msg);
+  audioLogger->printf("---> MIDI file error at position %04X (%d): %s\n", (uint16_t) curpos, (uint16_t) curpos, msg);
   /* print some bytes surrounding the error */
   ptr = curpos - 16;
   if (ptr < 0) ptr = 0;
@@ -81,9 +81,9 @@ void AudioGeneratorMIDI::midi_error(const char *msg, int curpos)
   for (int i = 0; i < 32; i++) {
     char c;
     buffer.read (buffer.data, &c, 1);
-    Serial.printf((ptr + i) == curpos ? " [%02X]  " : "%02X ", (int) c & 0xff);
+    audioLogger->printf((ptr + i) == curpos ? " [%02X]  " : "%02X ", (int) c & 0xff);
   }
-  Serial.printf("\n");
+  audioLogger->printf("\n");
 #endif
   running = false;
 }
@@ -359,7 +359,7 @@ void AudioGeneratorMIDI::PrepareMIDI(AudioFileSource *src)
   earliest_time = 0;
 }
 
-// Parses the note on/offs ujntil we are ready to render some more samples.  Then return the
+// Parses the note on/offs until we are ready to render some more samples.  Then return the
 // total number of samples to render before we need to be called again
 int AudioGeneratorMIDI::PlayMIDI()
 {
@@ -472,7 +472,7 @@ int AudioGeneratorMIDI::PlayMIDI()
         if (tg->instrument != midi_chan_instrument[trk->chan]) {    /* new instrument for this generator */
           tg->instrument = midi_chan_instrument[trk->chan];
         }
-        tsf_note_on (g_tsf, tg->instrument, tg->note, trk->velocity / 256.0);
+        tsf_note_on (g_tsf, tg->instrument, tg->note, trk->velocity / 127.0); // velocity = 0...127
       } else {
         ++notes_skipped;
       }
@@ -585,6 +585,7 @@ done:
 bool AudioGeneratorMIDI::stop()
 {
   StopMIDI();
+  output->stop();
   return true;
 }
 

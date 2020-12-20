@@ -1,6 +1,6 @@
 /*
-  AudioFileSourceSPIFFS
-  Input SPIFFS "file" to be used by AudioGenerator
+  AudioFileSourceFS
+  Input Arduion "file" to be used by AudioGenerator
   
   Copyright (C) 2017  Earle F. Philhower, III
 
@@ -25,24 +25,14 @@
 #include <FS.h>
 
 #include "AudioFileSource.h"
+#include "AudioFileSourceFS.h"
 
-class AudioFileSourceSPIFFS : public AudioFileSource
+class AudioFileSourceSPIFFS : public AudioFileSourceFS
 {
   public:
-    AudioFileSourceSPIFFS();
-    AudioFileSourceSPIFFS(const char *filename);
-    virtual ~AudioFileSourceSPIFFS() override;
-    
-    virtual bool open(const char *filename) override;
-    virtual uint32_t read(void *data, uint32_t len) override;
-    virtual bool seek(int32_t pos, int dir) override;
-    virtual bool close() override;
-    virtual bool isOpen() override;
-    virtual uint32_t getSize() override;
-    virtual uint32_t getPos() override { if (!f) return 0; else return f.position(); };
-
-  private:
-    fs::File f;
+    AudioFileSourceSPIFFS() : AudioFileSourceFS(SPIFFS) { };
+    AudioFileSourceSPIFFS(const char *filename) : AudioFileSourceFS(SPIFFS, filename) {};
+    // Others are inherited from base
 };
 
 

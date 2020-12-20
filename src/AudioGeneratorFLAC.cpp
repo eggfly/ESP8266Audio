@@ -30,6 +30,7 @@ AudioGeneratorFLAC::AudioGeneratorFLAC()
   buff[1] = NULL;
   buffPtr = 0;
   buffLen = 0;
+  running = false;
 }
 
 AudioGeneratorFLAC::~AudioGeneratorFLAC()
@@ -95,7 +96,7 @@ bool AudioGeneratorFLAC::loop()
 
     // Check for some weird case where above didn't give any data
     if (buffPtr == buffLen) {
-      goto done; // At some point the flac better error and we'll retudn 
+      goto done; // At some point the flac better error and we'll return 
     }
     if (bitsPerSample <= 16) {
       lastSample[AudioOutput::LEFTCHANNEL] = buff[0][buffPtr] & 0xffff; 
@@ -126,7 +127,7 @@ bool AudioGeneratorFLAC::stop()
     FLAC__stream_decoder_delete(flac);
   flac = NULL;
   running = false;
-  
+  output->stop();
   return true;
 }
 
@@ -186,11 +187,13 @@ void AudioGeneratorFLAC::metadata_cb(const FLAC__StreamDecoder *decoder, const F
 {
   (void) decoder;
   (void) metadata;
-  Serial.printf_P(PSTR("Metadata\n"));
+  audioLogger->printf_P(PSTR("Metadata\n"));
 }
+char AudioGeneratorFLAC::error_cb_str[64];
 void AudioGeneratorFLAC::error_cb(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status)
 {
   (void) decoder;
-  cb.st((int)status, FLAC__StreamDecoderErrorStatusString[status]);
+  strncpy_P(error_cb_str, FLAC__StreamDecoderErrorStatusString[status], 64);
+  cb.st((int)status, error_cb_str);
 }
 
